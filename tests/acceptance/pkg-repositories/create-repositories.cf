@@ -1,0 +1,74 @@
+body common control
+{
+  bundlesequence => { "packages", "repositories", "check" };
+}
+
+bundle common global
+{
+  vars:
+    "cwd" string => execresult("/bin/pwd", "noshell");
+    redhat.x86_64::
+      "pkg_name" string => "test-package-1.0-1.x86_64.rpm";
+      "arch_dir" string => "x86_64";
+    redhat.x86::
+      "pkg_name" string => "test-package-1.0-1.x86.rpm";
+      "arch_dir" string => "x86";
+    debian.x86_64::
+      "pkg_name" string => "test-package_1.0_amd64.deb";
+      "arch_dir" string => "amd64";
+    debian.x86::
+      "pkg_name" string => "test-package_1.0_i386.deb";
+      "arch_dir" string => "i386";
+}
+
+body contain useshell
+{
+  useshell => "useshell";
+}
+
+bundle agent packages
+{
+  classes:
+    "packages_ok" expression => fileexists("$(global.cwd)/$(global.pkg_name)"),
+      scope => "namespace";
+
+  commands:
+    !packages_ok.redhat::
+      "rpmbuild -bb $(global.cwd)/test-package.spec && cp /usr/src/redhat/RPMS/$(global.arch_dir)/$(global.pkg_name) $(global.cwd)"
+        contain => useshell;
+}
+
+bundle agent repositories
+{
+  files:
+    redhat::
+      "/etc/yum.repos.d/test-repository.repo"
+        create => "true",
+        edit_line => repository,
+        edit_defaults => edit_defaults;
+}
+
+bundle edit_line repository
+{
+  insert_lines:
+    "[test-repository]";
+    "name=Test repository";
+    "baseurl=file://$(global.cwd)";
+    "enabled=1";
+    "gpgcheck=0";
+}
+
+body edit_defaults edit_defaults
+{
+  edit_backup => "false";
+  empty_file_before_editing => "true";
+}
+
+bundle agent check
+{
+  reports:
+    packages_ok::
+      "$(this.promise_filename) Pass";
+    !packages_ok::
+      "$(this.promise_filename) FAIL";
+}
