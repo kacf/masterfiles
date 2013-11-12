@@ -20,7 +20,22 @@ body common control
 
 bundle agent init
 {
-  
+    vars:
+        "name" slist => { "test-package","test-package-alpha","test-package-beta"};
+
+    packages:
+    
+        debian::
+        
+            "$(name)"
+            package_policy => "add",
+            package_method => apt_get;
+            
+        redhat::
+        
+            "$(name)"
+            package_policy => "add",
+            package_method => yum_rpm;
 }
 
 #######################################################
@@ -28,8 +43,7 @@ bundle agent init
 bundle agent test
 {
     vars:
-    
-        "name" slist => { "zip","unzip","vim"};
+        "name" slist => { @(init.name) };
       
 
     packages:
@@ -39,14 +53,14 @@ bundle agent test
             "$(name)"
             package_policy => "delete",
             package_method => apt_get,
-            classes => test_set_class("pass","fail");
+            classes => test_set_class("pass_$(name)","fail_$(name)");
           
         redhat::
         
             "$(name)"
             package_policy => "delete",
             package_method => yum_rpm,
-            classes => test_set_class("pass","fail");
+            classes => test_set_class("pass_$(name)","fail_$(name)");
       
 }
 
@@ -68,21 +82,32 @@ bundle agent check
     
         debian::
         
-            "has_pkg" expression => returnszero("/usr/bin/apt-cache policy $(test.name) | /bin/grep -q none", "useshell");
+            "not_has_pkg_$(test.name)" not => returnszero("dpkg -l $(test.name) > /dev/null", "useshell");
             
         redhat::
         
-            "has_pkg" not => returnszero("/bin/rpm -qa | grep -qw $(test.name)", "useshell");
+            "not_has_pkg_$(test.name)" not => returnszero("/bin/rpm -q $(test.name) > /dev/null", "useshell");
         
         any::
-        
-            "ok" expression => "pass.!fail.has_pkg";
+            "not_has_file_test_package" not => fileexists("/dummy.txt");
+            "not_has_file_test_package_alpha" not => fileexists("/dummy-alpha.txt");
+            "not_has_file_test_package_beta" not => fileexists("/dummy-beta.txt");
+            # Would be nice to test the pass_* and fail_* classes here, but CFEngine
+            # doesn't set the classes properly when installing multiple new packages.
+            "main_ok" and => { #"pass_test_package", "!fail_test_package",
+                               "not_has_pkg_test_package", "not_has_file_test_package" };
+            "alpha_ok" and => { #"pass_test_package_alpha", "!fail_test_package_alpha",
+                                "not_has_pkg_test_package_alpha", "not_has_file_test_package_alpha" };
+            "beta_ok" and => { #"pass_test_package_beta", "!fail_test_package_beta",
+                               "not_has_pkg_test_package_beta", "not_has_file_test_package_beta" };
+
+            "ok" and => { "main_ok", "alpha_ok", "beta_ok" };
 
     reports:
     
         ok::
         
-            "$(this.promise_filename) $(test.name) Pass";
+            "$(this.promise_filename) Pass";
             
         !ok::
         

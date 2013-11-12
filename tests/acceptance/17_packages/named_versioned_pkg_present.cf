@@ -22,40 +22,46 @@ body common control
 
 bundle agent init
 {
-  vars:
-   debian::
-    "version" string => "3.0-7init";
+    vars:
+        "name" string => "test-package";
+
+    packages:
+        "$(name)"
+        package_policy => "delete";
 }
 
 #######################################################
 
 bundle agent test
 {
-  vars:
+    vars:
+        "name" string => "$(init.name)";
 
       debian::
-          "name" string => "zip";
           "arch" string => "amd64";
-          "version" string => "3.0-7";
+          "version" string => "1.0-1";
       redhat::
-          "name" string => "zip";
           "arch" string => "x86_64";
-          "version" string => "3.0-1.el6";
+          "version" string => "1.0-1";
           
   
     packages:
   
         debian::
-          "$(name)"
-          package_policy => "add",
-#          package_select => "==",
-#          package_version => "$(version)",
-          package_method => apt_get_release("$(version)"),
-          classes => test_set_class("pass","fail");
+            "$(name)"
+            package_policy => "add",
+            package_select => "==",
+            package_version => "$(version)",
+            package_architectures => { "$(arch)" },
+            package_method => apt_get,
+            classes => test_set_class("pass","fail");
      
         redhat::
-            "$(name)-$(version).$(arch)"
+            "$(name)"
             package_policy => "add",
+            package_select => "==",
+            package_version => "$(version)",
+            package_architectures => { "$(arch)" },
             package_method => yum_rpm,
             classes => test_set_class("pass","fail");
 }
@@ -77,13 +83,14 @@ bundle agent check
     classes:
     
         debian::
-            "has_pkg" not => returnszero("/usr/bin/apt-cache policy $(test.name) | /bin/grep -q none", "useshell");
+            "has_pkg" expression => returnszero("dpkg -l $(test.name) > /dev/null", "useshell");
 
         redhat::
-            "has_pkg" expression => returnszero("/bin/rpm -qa | grep -qw $(test.name)", "useshell");
+            "has_pkg" expression => returnszero("/bin/rpm -q $(test.name) > /dev/null", "useshell");
             
         any::
-            "ok" expression => "pass.!fail.has_pkg";
+            "has_file" expression => fileexists("/dummy.txt");
+            "ok" expression => "pass.!fail.has_pkg.has_file";
   
     reports:
       ok::

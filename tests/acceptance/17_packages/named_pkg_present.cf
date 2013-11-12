@@ -7,14 +7,12 @@
 body common control
 {
       inputs => { 
- #                "../default.cf.sub",
- #                "../../libraries/cfengine_stdlib.cf",
-	          "../../../masterfiles/lib/3.6/packages.cf",
-	          "../../../masterfiles/lib/3.6/files.cf",
-                  "../../../masterfiles/lib/3.6/paths.cf",
-		  "../../../masterfiles/lib/3.6/common.cf",
+                 #"../default.cf.sub",
+                 #"../../../libraries/cfengine_stdlib.cf",
+                  "../../../lib/3.6/packages.cf",
+                  "../../../lib/3.6/paths.cf",
                 };
-      bundlesequence  => { "g", "init", "test", "check" };
+      bundlesequence  => { "init", "test", "check" };
       version => "1.0";
 }
 
@@ -22,26 +20,14 @@ body common control
 
 #######################################################
 
-bundle common g
-{
-    vars: 
-        debian::
-            "name" string => "testpackage";      
-}
-body agent control {
-    default_repository => "/var/cfengine/backup";
-
-}
 bundle agent init
 {
-    files:
-        debian::
-            "/etc/apt/sources.list.d/testdebian.list"
-            create => "true",
-            edit_line => append_if_no_line
-            ("deb file:///home/build/build/core/tests/acceptance/17_packages/repo package1 main");
-         
-    
+    vars:
+        "name" string => "test-package";
+  
+    packages:
+        "$(name)"
+        package_policy => "delete";
 }
 
 #######################################################
@@ -49,11 +35,11 @@ bundle agent init
 bundle agent test
 {
     vars:
-        debian::
-            "name" string => "testpackage";
+        "name" string => "$(init.name)";
  
     packages:
-          
+        
+      
         debian::
         
 	    "$(name)"
@@ -86,13 +72,14 @@ bundle agent check
     classes:
   
         redhat::
-            "has_pkg" expression => returnszero("/bin/rpm -qa | grep -qw $(test.name)", "useshell");
+            "has_pkg" expression => returnszero("/bin/rpm -q $(test.name) > /dev/null", "useshell");
             
         debian::
-            "has_pkg" not => returnszero("/usr/bin/apt-cache policy $(test.name) | /bin/grep -q none", "useshell");
+            "has_pkg" expression => returnszero("dpkg -l $(test.name) > /dev/null", "useshell");
       
         any::
-            "ok" expression => "pass.!fail.has_pkg";
+            "has_file" expression => fileexists("/dummy.txt");
+            "ok" expression => "pass.!fail.has_pkg.has_file";
   
     reports:
         ok::
@@ -100,10 +87,3 @@ bundle agent check
         !ok::
             "$(this.promise_filename) $(test.name) FAIL";
 }
-
-body classes succesfully_executed(class)
-{
-    kept_returncodes => { "0" };
-    promise_kept => { "$(class)" };
-}
-

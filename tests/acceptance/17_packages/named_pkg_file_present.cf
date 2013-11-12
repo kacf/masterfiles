@@ -15,22 +15,16 @@ body common control
     version => "1.0";
 }
 
-bundle common g
-{
-           
-    
-}
-
 #######################################################
 
 bundle agent init
 {
-  commands:
-    debian::
-      "/usr/bin/apt-get purge zip";
-    redhat::
-      "/usr/bin/yum erase -y zip";
-      
+    vars:
+        "name" string => "test-package";
+
+    packages:
+        "$(name)"
+        package_policy => "delete";
 }
 
 #######################################################
@@ -40,13 +34,9 @@ bundle agent test
 
     vars:
     
-        "name" string => "zip";
+        "name" string => "test-machine";
         
-        debian:: 
-            "version" string => "3.0-7";
-            
-        redhat::
-            "version" string => "3.0-1";
+        "version" string => "1.0-1";
             
     packages:
     
@@ -56,7 +46,7 @@ bundle agent test
             package_policy => "add",
             package_select => "==",
             package_version => "$(version)",
-            package_architectures => { "i386", "i686" },
+            package_architectures => { "i386", "amd64" },
             package_method => dpkg_version("$(g.cwd)/repo");
             
         redhat::
@@ -89,13 +79,14 @@ bundle agent check
     classes:
     
         debian::
-            "has_pkg" expression => returnszero("/usr/bin/apt-cache policy $(test.name) | /bin/grep -q none", "useshell");
+            "has_pkg" expression => returnszero("dpkg -l $(test.name) > /dev/null", "useshell");
 
         redhat::
-            "has_pkg" not => returnszero("/bin/rpm -qa | grep -qw $(test.name)", "useshell");
+            "has_pkg" expression => returnszero("/bin/rpm -q $(test.name) > /dev/null", "useshell");
             
         any::
-            "ok" expression => "pass.!fail.has_pkg";
+            "has_file" expression => fileexists("/dummy.txt");
+            "ok" expression => "pass.!fail.has_pkg.has_file";
   
     reports:
       ok::
@@ -103,12 +94,5 @@ bundle agent check
       !ok::
         "$(this.promise_filename) FAIL";
 }
-
-body classes succesfully_executed(class)
-{
-    kept_returncodes => { "0" };
-    promise_kept => { "$(class)" };
-}
-
 
 

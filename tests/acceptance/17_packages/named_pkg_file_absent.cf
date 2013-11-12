@@ -21,23 +21,22 @@ body common control
 
 bundle agent init
 {
-  
+    vars:
+        "name" string => "test-package"; 
 }
 
 #######################################################
 
 bundle agent test
 {
-       
     vars:
-    
-        "name" string => "zip"; 
+        "name" string => "$(init.name)"; 
         
         debian::
-            "version" string => "3.0-7";
+            "version" string => "1.0-1";
             
         redhat::
-            "version" string => "3.0-1";
+            "version" string => "1.0-1";
             
     packages:
     
@@ -75,13 +74,14 @@ bundle agent check
     classes:
     
         debian::
-            "has_pkg" not => returnszero("/usr/bin/apt-cache policy $(test.name) | /bin/grep -q none", "useshell");
+            "not_has_pkg" not => returnszero("dpkg -l $(test.name) > /dev/null", "useshell");
 
         redhat::
-            "has_pkg" expression => returnszero("/bin/rpm -qa | grep -qw $(test.name)", "useshell");
+            "not_has_pkg" not => returnszero("/bin/rpm -q $(test.name) > /dev/null", "useshell");
             
         any::
-            "ok" expression => "pass.!fail.has_pkg";
+            "not_has_file" not => fileexists("/dummy.txt");
+            "ok" expression => "pass.!fail.not_has_pkg.not_has_file";
   
     reports:
       ok::
