@@ -2,7 +2,7 @@ Summary: CFEngine Test Package Beta
 Name: test-package-beta
 Version: 1.0
 Release: 1
-Source: ./test-package-installed.txt
+Source: test-package-installed.txt
 License: MIT
 Group: Other
 Url: http://example.com
