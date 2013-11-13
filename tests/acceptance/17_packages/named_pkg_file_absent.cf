@@ -6,7 +6,7 @@
 
 body common control
 {
-    inputs => {   
+    inputs => {
                "../../../lib/3.6/packages.cf",
                "../../../lib/3.6/paths.cf",
               };
@@ -22,7 +22,7 @@ body common control
 bundle agent init
 {
     vars:
-        "name" string => "test-package-charlie"; 
+        "name" string => "test-package-charlie";
 }
 
 #######################################################
@@ -30,16 +30,16 @@ bundle agent init
 bundle agent test
 {
     vars:
-        "name" string => "$(init.name)"; 
-        
+        "name" string => "$(init.name)";
+
         debian::
             "version" string => "1.0-1";
-            
+
         redhat::
             "version" string => "1.0-1";
-            
+
     packages:
-    
+
         debian::
             "$(name)"
             package_policy => "delete",
@@ -54,7 +54,7 @@ bundle agent test
             package_version => "$(version)",
             package_architectures => { "i386", "x86_64" },
             package_method => rpm_version("/tmp");
-        
+
 }
 
 
@@ -72,17 +72,17 @@ bundle agent check
 {
 
     classes:
-    
+
         debian::
             "not_has_pkg" not => returnszero("dpkg -l $(test.name) > /dev/null", "useshell");
 
         redhat::
             "not_has_pkg" not => returnszero("/bin/rpm -q $(test.name) > /dev/null", "useshell");
-            
+
         any::
             "not_has_file" not => fileexists("/test-package-charlie-installed.txt");
             "ok" expression => "pass.!fail.not_has_pkg.not_has_file";
-  
+
     reports:
       ok::
         "$(this.promise_filename) $(test.name)=$(test.version)  Pass";

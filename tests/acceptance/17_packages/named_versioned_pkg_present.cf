@@ -6,7 +6,7 @@
 
 body common control
 {
-    inputs => { 
+    inputs => {
 #               "../default.cf.sub",
                "../../../lib/3.6/packages.cf",
                "../../../lib/3.6/paths.cf",
@@ -43,10 +43,10 @@ bundle agent test
       redhat::
           "arch" string => "x86_64";
           "version" string => "1.0-1";
-          
-  
+
+
     packages:
-  
+
         debian::
             "$(name)"
             package_policy => "add",
@@ -55,7 +55,7 @@ bundle agent test
             package_architectures => { "$(arch)" },
             package_method => apt_get,
             classes => test_set_class("pass","fail");
-     
+
         redhat::
             "$(name)"
             package_policy => "add",
@@ -81,17 +81,17 @@ bundle agent check
 {
 
     classes:
-    
+
         debian::
             "has_pkg" expression => returnszero("dpkg -l $(test.name) > /dev/null", "useshell");
 
         redhat::
             "has_pkg" expression => returnszero("/bin/rpm -q $(test.name) > /dev/null", "useshell");
-            
+
         any::
             "has_file" expression => fileexists("/test-package-charlie-installed.txt");
             "ok" expression => "pass.!fail.has_pkg.has_file";
-  
+
     reports:
       ok::
         "$(this.promise_filename) $(test.name)=$(test.version) installed Pass";

@@ -6,8 +6,8 @@
 
 body common control
 {
-    inputs => { 
-               "../default.cf.sub", 
+    inputs => {
+               "../default.cf.sub",
                "../../../libraries/cfengine_stdlib.cf",
               };
     bundlesequence  => { default("$(this.promise_filename)") };
@@ -24,16 +24,16 @@ bundle agent init
         "name" slist => { "test-package-charlie" };
 
     packages:
-        
-      
+
+
         debian::
-        
+
 	    "$(name)"
             package_policy => "add",
             package_method => apt_get;
-            
+
         redhat::
-        
+
             "$(name)"
             package_policy => "add",
             package_method => yum_rpm;
@@ -45,15 +45,15 @@ bundle agent test
 {
     vars:
         "name" slist => { "$(init.name)" };
-      
+
     packages:
-  
+
         debian::
             "$(name)"
             package_policy => "delete",
             package_method => apt_get,
             classes => test_set_class("pass","fail");
-      
+
     redhat::
         "$(name)"
         package_policy => "delete",

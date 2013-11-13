@@ -6,7 +6,7 @@
 
 body common control
 {
-    inputs => { 
+    inputs => {
                "../default.cf.sub",
                "../../../libraries/cfengine_stdlib.cf",
               };
@@ -21,7 +21,7 @@ body common control
 bundle agent init
 {
     vars:
-        "name" string => "test-package-charlie"; 
+        "name" string => "test-package-charlie";
 
     debian::
         "arch" string => "amd64";
@@ -29,10 +29,10 @@ bundle agent init
     redhat::
         "arch" string => "x86_64";
         "version" string => "1.0-1";
-          
-  
+
+
     packages:
-  
+
         debian::
             "$(name)"
             package_policy => "add",
@@ -40,7 +40,7 @@ bundle agent init
             package_version => "$(version)",
             package_architectures => { "$(arch)" },
             package_method => apt_get;
-     
+
         redhat::
             "$(name)"
             package_policy => "add",
@@ -55,13 +55,13 @@ bundle agent init
 bundle agent test
 {
     vars:
-        "name" string => "$(init.name)"; 
+        "name" string => "$(init.name)";
         "arch" string => "$(init.arch)";
         "version" string => "$(init.version)";
 
-  
+
     packages:
-  
+
         debian::
             "$(name)"
             package_policy => "delete",
@@ -70,7 +70,7 @@ bundle agent test
             package_architectures => { "$(arch)" },
             package_method => apt_get,
             classes => test_set_class("pass","fail");
-     
+
         redhat::
             "$(name)"
             package_policy => "delete",
@@ -96,17 +96,17 @@ bundle agent check
 {
 
     classes:
-    
+
         debian::
             "not_has_pkg" not => returnszero("dpkg -l $(test.name) > /dev/null", "useshell");
 
         redhat::
             "not_has_pkg" not => returnszero("/bin/rpm -q $(test.name) > /dev/null", "useshell");
-            
+
         any::
             "not_has_file" not => fileexists("/test-package-charlie-installed.txt");
             "ok" expression => "pass.!fail.not_has_pkg.not_has_file";
-  
+
     reports:
       ok::
         "$(this.promise_filename) $(test.name)=$(test.version)  Pass";

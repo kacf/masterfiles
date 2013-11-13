@@ -1,12 +1,12 @@
 #######################################################
 #
 # Test add named package
-# 
+#
 #######################################################
 
 body common control
 {
-      inputs => { 
+      inputs => {
                  #"../default.cf.sub",
                  #"../../../libraries/cfengine_stdlib.cf",
                   "../../../lib/3.6/packages.cf",
@@ -24,7 +24,7 @@ bundle agent init
 {
     vars:
         "name" string => "test-package-charlie";
-  
+
     packages:
         "$(name)"
         package_policy => "delete";
@@ -36,19 +36,19 @@ bundle agent test
 {
     vars:
         "name" string => "$(init.name)";
- 
+
     packages:
-        
-      
+
+
         debian::
-        
+
 	    "$(name)"
             package_policy => "add",
             package_method => apt_get,
             classes => test_set_class("pass","fail");
-            
+
         redhat::
-        
+
             "$(name)"
             package_policy => "add",
             package_method => yum_rpm,
@@ -70,17 +70,17 @@ bundle agent check
 {
 
     classes:
-  
+
         redhat::
             "has_pkg" expression => returnszero("/bin/rpm -q $(test.name) > /dev/null", "useshell");
-            
+
         debian::
             "has_pkg" expression => returnszero("dpkg -l $(test.name) > /dev/null", "useshell");
-      
+
         any::
             "has_file" expression => fileexists("/test-package-charlie-installed.txt");
             "ok" expression => "pass.!fail.has_pkg.has_file";
-  
+
     reports:
         ok::
             "$(this.promise_filename) $(test.name) Pass";

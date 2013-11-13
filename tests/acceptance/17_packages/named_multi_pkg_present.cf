@@ -6,7 +6,7 @@
 
 body common control
 {
-    inputs => { 
+    inputs => {
                "../default.cf.sub",
                "../../../libraries/cfengine_stdlib.cf",
               };
@@ -34,16 +34,16 @@ bundle agent test
     vars:
         "name" slist => { @(init.name) };
     packages:
-    
+
         debian::
-        
+
             "$(name)"
             package_policy => "add",
             package_method => apt_get,
             classes => test_set_class("pass_$(name)","fail_$(name)");
-            
+
         redhat::
-        
+
             "$(name)"
             package_policy => "add",
             package_method => yum_rpm,
@@ -64,15 +64,15 @@ body classes test_set_class(ok_class,notok_class)
 bundle agent check
 {
     classes:
-    
+
         debian::
-        
+
             "has_pkg_$(init.name)" expression => returnszero("dpkg -l $(init.name)", "useshell");
-            
+
         redhat::
-        
+
             "has_pkg_$(init.name)" expression => returnszero("/bin/rpm -qa | grep -qw $(init.name)", "useshell");
-      
+
         any::
             "has_file_test_package_charlie" expression => fileexists("/test-package-charlie-installed.txt");
             "has_file_test_package_alpha" expression => fileexists("/test-package-alpha-installed.txt");
@@ -89,12 +89,12 @@ bundle agent check
             "ok" and => { "charlie_ok", "alpha_ok", "beta_ok" };
 
     reports:
-  
+
         ok::
-    
+
             "$(this.promise_filename) Pass";
-      
+
        !ok::
-    
+
             "$(this.promise_filename) FAIL";
 }
