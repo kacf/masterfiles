@@ -21,7 +21,7 @@ body common control
 bundle agent init
 {
     vars:
-        "name" slist => { "test-package" };
+        "name" slist => { "test-package-charlie" };
 
     packages:
         
@@ -82,7 +82,7 @@ bundle agent check
             "not_has_pkg" not => returnszero("/bin/rpm -q $(test.name) > /dev/null", "useshell");
 
         any::
-            "not_has_file" not => fileexists("/dummy.txt");
+            "not_has_file" not => fileexists("/test-package-charlie-installed.txt");
             "ok" expression => "pass.!fail.not_has_pkg.not_has_file";
 
     reports:

@@ -21,7 +21,7 @@ body common control
 bundle agent init
 {
     vars:
-        "name" slist => { "test-package","test-package-alpha","test-package-beta"};
+        "name" slist => { "test-package-charlie","test-package-alpha","test-package-beta"};
 
     packages:
     
@@ -89,19 +89,19 @@ bundle agent check
             "not_has_pkg_$(test.name)" not => returnszero("/bin/rpm -q $(test.name) > /dev/null", "useshell");
         
         any::
-            "not_has_file_test_package" not => fileexists("/dummy.txt");
-            "not_has_file_test_package_alpha" not => fileexists("/dummy-alpha.txt");
-            "not_has_file_test_package_beta" not => fileexists("/dummy-beta.txt");
+            "not_has_file_test_package_charlie" not => fileexists("/test-package-charlie-installed.txt");
+            "not_has_file_test_package_alpha" not => fileexists("/test-package-alpha-installed.txt");
+            "not_has_file_test_package_beta" not => fileexists("/test-package-beta-installed.txt");
             # Would be nice to test the pass_* and fail_* classes here, but CFEngine
             # doesn't set the classes properly when installing multiple new packages.
-            "main_ok" and => { #"pass_test_package", "!fail_test_package",
-                               "not_has_pkg_test_package", "not_has_file_test_package" };
+            "charlie_ok" and => { #"pass_test_package_charlie", "!fail_test_package_charlie",
+                               "not_has_pkg_test_package_charlie", "not_has_file_test_package_charlie" };
             "alpha_ok" and => { #"pass_test_package_alpha", "!fail_test_package_alpha",
                                 "not_has_pkg_test_package_alpha", "not_has_file_test_package_alpha" };
             "beta_ok" and => { #"pass_test_package_beta", "!fail_test_package_beta",
                                "not_has_pkg_test_package_beta", "not_has_file_test_package_beta" };
 
-            "ok" and => { "main_ok", "alpha_ok", "beta_ok" };
+            "ok" and => { "charlie_ok", "alpha_ok", "beta_ok" };
 
     reports:
     

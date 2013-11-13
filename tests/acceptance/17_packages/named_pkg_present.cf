@@ -23,7 +23,7 @@ body common control
 bundle agent init
 {
     vars:
-        "name" string => "test-package";
+        "name" string => "test-package-charlie";
   
     packages:
         "$(name)"
@@ -78,7 +78,7 @@ bundle agent check
             "has_pkg" expression => returnszero("dpkg -l $(test.name) > /dev/null", "useshell");
       
         any::
-            "has_file" expression => fileexists("/dummy.txt");
+            "has_file" expression => fileexists("/test-package-charlie-installed.txt");
             "ok" expression => "pass.!fail.has_pkg.has_file";
   
     reports:
