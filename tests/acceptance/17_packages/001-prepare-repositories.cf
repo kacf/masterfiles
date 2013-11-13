@@ -1,3 +1,12 @@
+########################################################################
+#
+# Not really a test, but a preparation policy for running other package
+# tests. It sets up the required files for accessing our local package
+# repository.
+# It MUST run before the other tests in this directory.
+#
+########################################################################
+
 body common control
 {
   bundlesequence => { "packages", "repositories", "update", "check" };
@@ -41,17 +50,18 @@ bundle agent packages
 
 bundle agent repositories
 {
-  files:
+  vars:
     redhat::
-      "/etc/yum.repos.d/test-repository.repo"
-        create => "true",
-        edit_line => repository,
-        edit_defaults => edit_defaults;
+      "repo_file" string => "/etc/yum.repos.d/test-repository.repo"
     debian::
-      "/etc/apt/sources.list.d/testdebian.list"
-        create => "true",
-        edit_line => repository,
-        edit_defaults => edit_defaults;
+      "repo_file" string => "/etc/apt/sources.list.d/testdebian.list"
+
+  files:
+    "$(repo_file)"
+      create => "true",
+      edit_line => repository,
+      edit_defaults => edit_defaults,
+      classes => if_successful("repo_ok");
 }
 
 bundle edit_line repository
@@ -60,11 +70,11 @@ bundle edit_line repository
     redhat::
       "[test-repository]";
       "name=Test repository";
-      "baseurl=file://$(global.cwd)";
+      "baseurl=file://$(global.cwd)/repo";
       "enabled=1";
       "gpgcheck=0";
     debian::
-      "deb file:///root/code/masterfiles/tests/acceptance/17_packages/repo package1 main";
+      "deb file://$(global.cwd)/repo package1 main";
 }
 
 body edit_defaults edit_defaults
@@ -78,14 +88,28 @@ bundle agent update
   commands:
     redhat::
       "yum makecache"
-        contain => useshell;
+        contain => useshell,
+        classes => if_successful("update_ok");
+    debian::
+      "apt-get update"
+        contain => useshell,
+        classes => if_successful("update_ok");
+}
+
+body classes if_successful(x)
+{
+  promise_repaired => "$(x)";
+  promise_kept     => "$(x)";
 }
 
 bundle agent check
 {
+  classes:
+    "everything_ok" and => { "repo_ok", "update_ok" };
+
   reports:
-    packages_ok::
+    everything_ok::
       "$(this.promise_filename) Pass";
-    !packages_ok::
+    !everything_ok::
       "$(this.promise_filename) FAIL";
 }
