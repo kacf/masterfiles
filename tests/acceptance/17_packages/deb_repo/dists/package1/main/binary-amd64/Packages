@@ -8,9 +8,9 @@ Priority: optional
 Section: custom
 Filename: pool/main/t/test-package-alpha/test-package-alpha_1.0-1_all.deb
 Size: 676
-SHA256: 1c30578bb94b7ab61663bd3798dee6b9ceb09f897df5a12cc444631e89f150ab
-SHA1: 25991277e4729548bc3fc9a64912df890ca7931b
-MD5sum: e373fdd3dd75a28570bb523ecd1ea1f8
+SHA256: c7a719001e2ca3aad11a46a41022d62dde4c92372fa3c49127864fb48afeee62
+SHA1: abb6041448c273cf6d22bc061d3bf2ad49969f10
+MD5sum: bddf0c8a92dce97b40bd48f3b14899ff
 Description: Debian test package Alpha
 
 Package: test-package-beta
@@ -23,9 +23,9 @@ Priority: optional
 Section: custom
 Filename: pool/main/t/test-package-beta/test-package-beta_1.0-1_all.deb
 Size: 672
-SHA256: b5d0e7f6ebf5e4df1ccca2b9eca2fee075f66f9cb5bd1e2efc80708e04eb062c
-SHA1: 695a96eb51b32aa2744dc4f73db290b5b778e516
-MD5sum: 67167afe13a3a7331f5e1d5b238bae9e
+SHA256: c91a6509310c9318138e3e764a1f5029e6b010640819d460dc9ee5c7e672373b
+SHA1: 6dc297fa49a70dafe91e412f1d5adff79c8211ea
+MD5sum: faca0a3d373cb2cd550e074fcd1c7565
 Description: Debian test package Beta
 
 Package: test-package-charlie
@@ -38,8 +38,8 @@ Priority: optional
 Section: custom
 Filename: pool/main/t/test-package-charlie/test-package-charlie_1.0-1_all.deb
 Size: 678
-SHA256: 284aacaa53069bb11705e71b580a93111467f3203b170a71755531227b466b0f
-SHA1: d17d134c6795e74fc5854db10f8d6a7e90fb9997
-MD5sum: b68456ace43c363522e1e6c091a5919e
+SHA256: 9b38d2ddd276ee01e1e07ad5225b03c910ca9dc7f2f601253a703642f1d25788
+SHA1: 1f32b39a70156f5823e56f8652abef2f66e55365
+MD5sum: 215b9e153b1d34080289fa1c69f835fc
 Description: Debian test package
 

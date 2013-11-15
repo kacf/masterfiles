@@ -22,3 +22,7 @@ cd deb_repo
 for i in *.deb; do
     REPREPRO_BASE_DIR=`pwd` ../putinrepo.sh $i
 done
+
+for i in `find . -name Release`; do
+    gpg --detach-sign --armor --no-default-keyring --keyring ../gpg/pubring.gpg --secret-keyring ../gpg/secring.gpg --output $i.gpg $i
+done
