@@ -82,7 +82,7 @@ bundle agent check
 
         debian::
 
-            "not_has_pkg_$(test.name)" not => returnszero("dpkg -l $(test.name) > /dev/null", "useshell");
+            "not_has_pkg_$(test.name)" not => returnszero("dpkg -l | grep ' $(test.name) ' > /dev/null", "useshell");
 
         redhat::
 

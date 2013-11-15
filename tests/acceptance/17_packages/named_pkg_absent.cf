@@ -77,7 +77,7 @@ bundle agent check
 
     classes:
         debian::
-            "not_has_pkg" not => returnszero("dpkg -l $(test.name) > /dev/null", "useshell");
+            "not_has_pkg" not => returnszero("dpkg -l | grep ' $(test.name) ' > /dev/null", "useshell");
         redhat::
             "not_has_pkg" not => returnszero("/bin/rpm -q $(test.name) > /dev/null", "useshell");
 

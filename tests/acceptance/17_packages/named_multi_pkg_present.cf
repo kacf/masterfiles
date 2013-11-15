@@ -67,7 +67,7 @@ bundle agent check
 
         debian::
 
-            "has_pkg_$(init.name)" expression => returnszero("dpkg -l $(init.name)", "useshell");
+            "has_pkg_$(init.name)" expression => returnszero("dpkg -l | grep ' $(init.name) '", "useshell");
 
         redhat::
 
