@@ -7,9 +7,9 @@ bundle agent inventory_packages
     debian::
       "cfe_internal_non_existing_package"
         package_policy => "add",
-        package_method => dpkg_version("/");
+        package_method => apt_get;
     redhat::
       "cfe_internal_non_existing_package"
         package_policy => "add",
-        package_method => rpm_version("/");
+        package_method => yum_rpm;
 }
