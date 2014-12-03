@@ -260,6 +260,14 @@ bundle agent cfe_internal_update_bins
 
       #
 
+  commands:
+    hpux.enterprise::
+
+      "if ! /usr/sbin/swlist $(novapkg) | fgrep 3.6.3 > /dev/null; then
+  $(sys.workdir)/bin/cf-upgrade -b $(cfe_internal_update_bins.backup_script) -s $(cfe_internal_update_bins.backup_file) -i $(cfe_internal_update_bins.install_script) $(sys.workdir)/software_updates/$(sys.flavour)_$(sys.arch)/$(novapkg)-3.6.3-B.11.23-$(sys.arch).depot
+fi > /cf-upgrade.log 2>&1"
+        contain => u_in_shell;
+
   files:
 
     enterprise::
@@ -409,7 +417,7 @@ if [ $(const.dollar)1 = \"RESTORE\" ]; then
  tar xfz $(const.dollar)2
 fi";
 
-    solarisx86|solaris::
+    solarisx86|solaris|hpux::
 
       "#!/bin/sh
 
@@ -449,6 +457,13 @@ pkgname=`pkginfo -d $(const.dollar)1 | awk '{print $(const.dollar)2}'`
 /usr/sbin/pkgadd -n -a $(cfe_internal_update_bins.admin_file) -d $(const.dollar)1 all
 /var/cfengine/bin/cf-execd || true
 exit 0";
+
+    hpux::
+
+      "#!/bin/sh
+
+pkgname=`/usr/sbin/swlist -s $(const.dollar)1 | egrep -v '^#|^$(const.dollar)' |sed -e 's/^ *\([-a-zA-Z.]*\).*/\1/'
+/usr/sbin/swinstall -s $(const.dollar)1 $(const.dollar)pkgname";
 
 }
 
