@@ -8,6 +8,8 @@ import sys
 TEST_COUNT = 0
 PLATFORM_ARCH_32 = False
 
+CLASSES = [ "debian", "redhat" ]
+
 states = {
     "absent": {
         ( "64_bit", "1" ): False,
@@ -220,27 +222,41 @@ def get_possible_promises():
 # inputs can be different, but the returned value may cause both to be
 # different. This is only relevant for "repo" style promises, since "file"
 # promises will never touch more than one package at a time.
-def resolve_arch_conflicts(from_64, from_32, to_64, to_32):
+def resolve_arch_conflicts(cur_class, from_64, from_32, to_64, to_32):
     if from_64 != to_64:
         if from_32 != "0":
-            if to_64 >= from_32:
-                to_32 = to_64
-            else:
-                to_32 = "0"
+            if cur_class == "debian":
+                if to_64 >= from_32:
+                    to_32 = to_64
+                else:
+                    to_32 = "0"
+            elif cur_class == "redhat":
+                if to_64 > from_32:
+                    to_32 = "0"
+                elif to_64 < from_32:
+                    # Not possible on rpm.
+                    to_64 = from_64
 
     elif from_32 != to_32:
         if from_64 != "0":
-            if to_32 >= from_64:
-                to_64 = to_32
-            else:
-                to_64 = "0"
+            if cur_class == "debian":
+                if to_32 >= from_64:
+                    to_64 = to_32
+                else:
+                    to_64 = "0"
+            elif cur_class == "redhat":
+                if to_32 > from_64:
+                    to_64 = "0"
+                elif to_32 < from_64:
+                    # Not possible on rpm.
+                    to_32 = from_32
 
     return to_64, to_32
 
 
 # Simulate, with the given promise, what the state of the system would be,
 # if we started from the versions in from_64 and from_32.
-def simulate_promise(promise, from_64, from_32):
+def simulate_promise(promise, cur_class, from_64, from_32):
     to_64 = from_64
     to_32 = from_32
 
@@ -256,7 +272,7 @@ def simulate_promise(promise, from_64, from_32):
                 elif from_64 == "0":
                     to_64 = "2"
 
-                to_64, to_32 = resolve_arch_conflicts(from_64, from_32, to_64, to_32)
+                to_64, to_32 = resolve_arch_conflicts(cur_class, from_64, from_32, to_64, to_32)
 
             elif arch == "32_bit":
                 if version:
@@ -264,7 +280,7 @@ def simulate_promise(promise, from_64, from_32):
                 elif from_32 == "0":
                     to_32 = "2"
 
-                to_64, to_32 = resolve_arch_conflicts(from_64, from_32, to_64, to_32)
+                to_64, to_32 = resolve_arch_conflicts(cur_class, from_64, from_32, to_64, to_32)
 
             elif version:
 
@@ -334,8 +350,13 @@ def calc_transitions(from_state, to_state):
     valid_promises = []
 
     for promise in promise_candidates:
-        result = simulate_promise(promise, from_64, from_32)
-        if result[0] == to_64 and result[1] == to_32:
+        classes = []
+        for cur_class in CLASSES:
+            result = simulate_promise(promise, cur_class, from_64, from_32)
+            if result[0] == to_64 and result[1] == to_32:
+                classes.append(cur_class)
+        if classes:
+            promise["classes"] = "|".join(classes)
             valid_promises.append(promise)
 
     return valid_promises
@@ -367,6 +388,7 @@ def make_test(current_count, total_test_count, from_state, to_state, transition,
     print('''bundle agent ''' + test_handle + '''
 {
   methods:
+    ''' + transition["classes"] + '''::
       "''' + test_handle + '''_start_msg"
         usebundle => log_test_case("''' + str((current_count * 100) / total_test_count) + '''%: Starting test case \\"''' + test_handle + '''\\"");
       "''' + test_handle + '''_init"
@@ -529,7 +551,7 @@ for op in ["count", "do"]:
                 test_count += 1
             else:
                 current_count += 1
-                test_handle = "from_" + i[0] + "_to_" + i[1] + "___promise_" + "_".join([k + "_" + j[k] for k in j])
+                test_handle = "from_" + i[0] + "_to_" + i[1] + "___promise_" + "_".join([k + "_" + j[k] for k in j if k != "classes"])
                 test_handles.append(test_handle)
                 make_test(current_count, test_count, i[0], i[1], j, test_handle, False)
 
