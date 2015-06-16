@@ -82,8 +82,8 @@ def check(operation, input, no_lines, expected_output, mock_lines, mock_output):
 
 assert check("supports-api-version", [], 1, ["1"], 0, [])
 
-assert check("file-install", ["File=/path/to/pkg"], 0, [], 1, ["rpm --quiet -U /path/to/pkg"])
-assert check("file-install", ["File=/path/to/pkg","File=/path/to/pkg2"], 0, [], 1, ["rpm --quiet -U /path/to/pkg /path/to/pkg2"])
+assert check("file-install", ["File=/path/to/pkg"], 0, [], 1, ["rpm --quiet --force -U /path/to/pkg"])
+assert check("file-install", ["File=/path/to/pkg","File=/path/to/pkg2"], 0, [], 1, ["rpm --quiet --force -U /path/to/pkg /path/to/pkg2"])
 
 assert check("repo-install", ["Name=a\nVersion=1\nArchitecture=x",
                               "Name=b\nArchitecture=y",
@@ -97,7 +97,7 @@ assert check("repo-install", ["Name=a\nVersion=1\nArchitecture=x",
                               "Name=arch-x86_64-exists\nVersion=2",
                               "Name=arch-i386-exists\nVersion=2",
                               ],
-             0, [], 34, ["yum --quiet -y install a-1.x b.y c-3 d arch-x86_64-exists.x86_64 arch-i386-exists.i386",
+             0, [], 38, ["yum --quiet -y install a-1.x b.y c-3 d arch-x86_64-exists.x86_64 arch-i386-exists.i386",
                         "yum --quiet -y upgrade-to upgrade-2.x86_64",
                         "rpm --quiet -q upgrade-2.x86_64",
                         "yum --quiet -y upgrade-to downgrade-1.x86_64",
