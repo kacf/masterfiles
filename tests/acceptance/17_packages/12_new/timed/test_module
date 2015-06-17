@@ -21,7 +21,10 @@ for line in sys.stdin:
         break
 
 log = open(module_dir + "/test_module.log", "r")
-install_found = any(line.find("repo-install") >= 0 for line in log)
+install_found = False
+for line in log:
+    if line.find("repo-install") >= 0:
+        install_found = True
 log.close()
 
 if sys.argv[1] == "list-installed":
