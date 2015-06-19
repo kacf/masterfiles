@@ -23,18 +23,6 @@ body common control
     package_module => "yum";
 }
 
-body package_module apt_get
-{
-    query_installed_ifelapsed => "0";
-    query_updates_ifelapsed => "0";
-}
-
-body package_module yum
-{
-    query_installed_ifelapsed => "0";
-    query_updates_ifelapsed => "0";
-}
-
 bundle agent init
 {
   meta:
