@@ -11,7 +11,8 @@ PLATFORM_ARCH_32 = False
 CLASSES = { "new_debians": "(debian.!ubuntu_10.!debian_6)",
             "old_debians_32_bit": "(32_bit.(ubuntu_10|debian_6))", # No multiarch support.
             "old_debians_64_bit": "(64_bit.(ubuntu_10|debian_6))", # No multiarch support.
-            "redhat": "redhat"
+            "redhat_5": "redhat_5",
+            "redhat_6_or_newer": "(redhat.!redhat_5)",
           }
 
 class PromiseFailureException(Exception):
@@ -243,8 +244,8 @@ def resolve_arch_conflicts(cur_class, from_64, from_32, to_64, to_32):
                     to_32 = to_64
                 else:
                     to_32 = "0"
-            elif cur_class == "redhat":
-                if to_64 > from_32:
+            elif cur_class.startswith("redhat"):
+                if to_64 > from_32 and cur_class == "redhat_5":
                     to_32 = "0"
                 elif to_64 < from_32:
                     raise PromiseFailureException("Not possible on rpm")
@@ -256,8 +257,8 @@ def resolve_arch_conflicts(cur_class, from_64, from_32, to_64, to_32):
                     to_64 = to_32
                 else:
                     to_64 = "0"
-            elif cur_class == "redhat":
-                if to_32 > from_64:
+            elif cur_class.startswith("redhat"):
+                if to_32 > from_64 and cur_class == "redhat_5":
                     to_64 = "0"
                 elif to_32 < from_64:
                     raise PromiseFailureException("Not possible on rpm")
@@ -305,7 +306,7 @@ def simulate_promise(promise, cur_class, from_64, from_32):
             elif version:
 
                 if from_64 == "0" and from_32 == "0":
-                    if cur_class == "redhat":
+                    if cur_class == "redhat_5":
                         to_32 = version
                     to_64 = version
 
@@ -316,7 +317,7 @@ def simulate_promise(promise, cur_class, from_64, from_32):
                     to_32 = version
 
             elif from_64 == "0" and from_32 == "0":
-                if cur_class == "redhat":
+                if cur_class == "redhat_5":
                     to_32 = "2"
                 to_64 = "2"
 
