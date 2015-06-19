@@ -100,14 +100,36 @@ assert check("repo-install", ["Name=a\nVersion=1\nArchitecture=x",
                               "Name=netcat",
                               "Name=netcat\nVersion=3",
                               "Name=d"],
-             0, [], 9, ["dpkg-query --showformat ${Architecture}=${Status}\n -W netcat:*",
-                        "apt-get " + apt_get_options + " install a:x=1 b:y c=3 netcat:amd64 netcat:i386 netcat:amd64=3 netcat:i386=3 d"])
+             0, [], 15, ["""dpkg --print-architecture
+dpkg --print-architecture
+dpkg --print-architecture
+dpkg-query --showformat ${Architecture}=${Status}
+ -W c:*
+dpkg --print-architecture
+dpkg-query --showformat ${Architecture}=${Status}
+ -W netcat:*
+dpkg --print-architecture
+dpkg-query --showformat ${Architecture}=${Status}
+ -W netcat:*
+dpkg --print-architecture
+dpkg-query --showformat ${Architecture}=${Status}
+ -W d:*
+apt-get -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef -y --force-yes install a:x=1 b:y c=3 netcat:amd64 netcat:i386 netcat:amd64=3 netcat:i386=3 d
+"""])
 
 assert check("remove", ["Name=a\nVersion=1\nArchitecture=x",
                         "Name=b\nArchitecture=y",
                         "Name=c\nVersion=3",
                         "Name=d"],
-             0, [], 1, ["dpkg --remove a:x b:y c:* d:*"])
+             0, [], 9, ["""dpkg --print-architecture
+dpkg --print-architecture
+dpkg --print-architecture
+dpkg-query --showformat ${Architecture}=${Status}
+ -W c:*
+dpkg --print-architecture
+dpkg-query --showformat ${Architecture}=${Status}
+ -W d:*
+dpkg --remove a:x b:y c d"""])
 
 assert check("list-updates", [], 75,
              ["Name=dpkg\nVersion=1.16.1.2ubuntu7.6\nArchitecture=amd64",
