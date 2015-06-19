@@ -121,7 +121,10 @@ body package_module yum
 bundle agent init
 {
   meta:
+      # No package modules written for platforms besides RedHat and Debian.
       "test_skip_needs_work" string => "!debian.!redhat";
+      # The package module does not support RedHat 4.
+      "test_skip_unsupported" string => "redhat_4";
 }
 
 bundle agent log_test_case(msg)
