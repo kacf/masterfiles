@@ -9,6 +9,8 @@
 body server control
 
 {
+      call_collect_interval => "5";
+
       # List of ciphers the server accepts. For Syntax help see man page
       # for "openssl ciphers". Default is "AES256-GCM-SHA384:AES256-SHA"
       #allowciphers          => "AES256-GCM-SHA384:AES256-SHA";
@@ -60,6 +62,10 @@ bundle server access_rules()
 
 {
   access:
+
+      "collect_calls"
+        resource_type => "query",
+        admit => { "0.0.0.0/0" };
 
     any::
 
